@@ -13,7 +13,7 @@ UNIVERSITY = Path.home() / "Documents" / "uwaterloo"
 COURSES = ["CS456", "CS454", "CS348", "CS346"]
 
 class DownloadHandler(FileSystemEventHandler):
-    def on_any_event(self, event: FileSystemEvent) -> None:
+    def on_created(self, event):
         if event.is_directory:
             return
         
@@ -23,9 +23,22 @@ class DownloadHandler(FileSystemEventHandler):
         for course in COURSES:
             if course.lower() in name:
                 destination = UNIVERSITY / course
-                destination.mkdir(parent="True", exist_ok=True)
-                printf(f"Moving {file} to {destination}")
+                destination.mkdir(parents=True, exist_ok=True)
+                print(f"Moving {file} to {destination}")
+
+                if not file.exists():
+                    print("file does not exist")
+                    return 
+            
+                shutil.move(
+                    str(file),
+                    str(destination / file.name)
+                )
+
+                print("file moved!")
                 break
+
+   
 
 # runs in background and monitors filesystem
 observer = Observer()
@@ -39,7 +52,7 @@ observer.schedule(
 
 
 observer.start()
-
+print("watching for downlaods...")
 try:
     while True:
         time.sleep(1)
